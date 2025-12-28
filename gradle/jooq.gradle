@@ -1,0 +1,127 @@
+import javax.sql.DataSource
+import java.sql.Connection
+import java.sql.DriverManager
+
+apply plugin: "nu.studer.jooq"
+apply plugin: "org.flywaydb.flyway"
+
+dependencies {
+    implementation "org.jooq:jooq:${jooqVersion}"
+    jooqRuntime "mysql:mysql-connector-java:${mysqlVersion}"
+}
+
+jooq {
+    version = jooqVersion
+    edition = 'OSS'
+    generateSchemaSourceOnCompilation = false
+    "${project.name}"(sourceSets.main) {
+        jdbc {
+            driver = jooqGenDataSourceDriver
+            url = jooqGenDataSourceUrl
+            user = jooqGenDataSourceUrlUser
+            password = jooqGenDataSourceUrlPassword
+        }
+        generator {
+            database {
+                name = 'org.jooq.meta.mysql.MySQLDatabase'
+                inputSchema = jooqGenDataSourceInputSchema
+                outputSchemaToDefault = true
+
+                if (jooqGenIncludeTables instanceof List) {
+                    includes = jooqGenIncludeTables.join("|")
+                } else {
+                    includes = jooqGenIncludeTables
+                }
+
+                forcedTypes {
+                    forcedType {
+                        name = 'INTEGER'
+                        expression = '.*'
+                        types = 'TINYINT|TINYINT UNSIGNED|TINYINT\\(4\\)'
+                    }
+                }
+            }
+            generate {
+                deprecated = false
+                records = true
+                if (project.hasProperty("jooqGenPojos") && project.property("jooqGenPojos")) {
+                    pojos = true
+                }
+                fluentSetters = true
+                javaTimeTypes = true
+            }
+            strategy {
+                name = null
+                matchers {
+                    tables {
+                        table {
+                            pojoClass {
+                                transform = 'PASCAL'
+                                expression = '\$0_Entity'
+                            }
+                            daoClass {
+                                transform = 'PASCAL'
+                                expression = '\$0_Entity_Dao'
+                            }
+                        }
+
+                    }
+                }
+            }
+            target {
+                packageName = jooqGenPackageName
+                directory = 'src/main/jooq'
+            }
+        }
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/jooq'
+        }
+    }
+}
+
+
+if (hasProperty("useSqlGenerator") && useSqlGenerator) {
+    flyway {
+        url = property("jooqGenDataSourceUrl")
+        user = property("jooqGenDataSourceUrlUser")
+        password = property("jooqGenDataSourceUrlPassword")
+        def dirs = [project.name]
+        if (hasProperty("dbMigrationDirs")) {
+            dirs = property("dbMigrationDirs")
+        }
+        locations = dirs.collect { dir ->
+            "filesystem:${rootProject.projectDir}/db/migration/${dir}"
+        }
+        placeholderPrefix = '$$'
+        configurations = ['jooqRuntime']
+    }
+}
+//def jooqTaskName
+//project.extensions.jooq.configs.keySet()
+//project.tasks.getByName('generateStoremmmJooqSchemaSource')
+//project.extensions.jooq.configs.entrySet()[0].value.jooqTaskName
+// project.tasks.withType(nu.studer.gradle.jooq.JooqTask.class)[0]
+//project.tasks.getByName('compileJava').dependsOn -= 'generate${m}JooqSchemaSource'
+//project.tasks.getByName('clean').dependsOn -= 'cleanGenerate${m}JooqSchemaSource'
+//project.tasks.getByName('generate${m}JooqSchemaSource').outputs.upToDateWhen { false }
+project.extensions.jooq.configs.values().each {
+    def taskName = it.jooqTaskName
+    project.tasks.getByName('compileJava').dependsOn -= taskName
+    project.tasks.getByName('clean').dependsOn -= "clean${taskName.capitalize()}"
+    project.tasks.getByName(taskName).outputs.upToDateWhen { false }
+
+    if (project.hasProperty("useSqlGenerator") && project.property("useSqlGenerator")) {
+        project.getTasksByName("flywayClean", false).first().doFirst {
+            if (project.property("jooqGenDataSourceUrlUser") != "jooq_generator") {
+                throw new IllegalAccessException("Only sql generator support! 仅支持 SQL 文件模式生成 JOOQ 代码. 请参考已经把 SQL 文件维护在 db/migration 文件下的模块.")
+            }
+        }
+        project.tasks.getByName(taskName).dependsOn += "flywayClean"
+        project.tasks.getByName(taskName).dependsOn += "flywayMigrate"
+    }
+}

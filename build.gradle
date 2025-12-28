@@ -1,0 +1,123 @@
+plugins {
+    id 'org.springframework.boot' version '2.2.13.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+    id 'java'
+    id 'nu.studer.jooq' version '3.0.2'
+    id 'org.flywaydb.flyway' version '6.5.7'
+}
+
+group = 'com.merchant'
+version = '1.0.0-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+def mysqlVersion = '8.0.30'
+def jooqVersion = '3.13.4'
+def jooqGenDataSourceUrl = project.findProperty("jooqGenDataSourceUrl") ?:
+    "jdbc:mysql://localhost:3306/merchant_feecal_mvp_jooq?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai"
+def jooqGenDataSourceUrlUser = project.findProperty("jooqGenDataSourceUrlUser") ?: "root"
+def jooqGenDataSourceUrlPassword = project.findProperty("jooqGenDataSourceUrlPassword") ?: "NewStrongPass!"
+def jooqGenDataSourceDriver = project.findProperty("jooqGenDataSourceDriver") ?: "com.mysql.cj.jdbc.Driver"
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation "org.jooq:jooq:${jooqVersion}"
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+    implementation 'org.apache.commons:commons-collections4:4.3'
+    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'org.projectlombok:lombok:1.18.30'
+    // implementation 'org.redisson:redisson-spring-boot-starter:3.15.0'
+    implementation 'javax.annotation:javax.annotation-api:1.3.2'
+
+    runtimeOnly "mysql:mysql-connector-java:${mysqlVersion}"
+    jooqRuntime "mysql:mysql-connector-java:${mysqlVersion}"
+
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+repositories {
+    maven { url 'https://maven.aliyun.com/repository/public' }
+    mavenLocal()
+    mavenCentral()
+}
+
+jooq {
+    version = jooqVersion
+    edition = 'OSS'
+    main(sourceSets.main) {
+        jdbc {
+            driver = jooqGenDataSourceDriver
+            url = jooqGenDataSourceUrl
+            user = jooqGenDataSourceUrlUser
+            password = jooqGenDataSourceUrlPassword
+        }
+        generator {
+            name = 'org.jooq.codegen.JavaGenerator'
+            database {
+                name = 'org.jooq.meta.mysql.MySQLDatabase'
+                inputSchema = 'merchant_feecal_mvp_jooq'
+                outputSchemaToDefault = true
+                outputCatalogToDefault = true
+                forcedTypes {
+                    forcedType {
+                        name = 'INTEGER'
+                        expression = '.*'
+                        types = 'TINYINT|TINYINT UNSIGNED|TINYINT\\(4\\)'
+                    }
+                }
+            }
+            generate {
+                daos = false
+                records = true
+                pojos = true
+                immutablePojos = false
+                fluentSetters = true
+                javaTimeTypes = true
+            }
+            strategy {
+                name = null
+                matchers {
+                    tables {
+                        table {
+                            pojoClass {
+                                transform = 'PASCAL'
+                                expression = '\$0_Entity'
+                            }
+                        }
+                    }
+                }
+            }
+            target {
+                packageName = 'com.merchant.dao'
+                directory = 'src/main/java'
+            }
+        }
+    }
+}
+
+tasks.named("compileJava") {
+    dependsOn.remove("generateMainJooqSchemaSource")
+}
+
+tasks.named("generateMainJooqSchemaSource") {
+    outputs.upToDateWhen { false }
+}
+
+tasks.register("rebuildJooqSchema") {
+    group = "jooq"
+    description = "Clean and rebuild jOOQ schema, then regenerate code."
+    dependsOn "flywayClean", "flywayMigrate", "generateMainJooqSchemaSource"
+}
+
+flyway {
+    url = jooqGenDataSourceUrl
+    user = jooqGenDataSourceUrlUser
+    password = jooqGenDataSourceUrlPassword
+    locations = ["filesystem:${rootProject.projectDir}/database"]
+}
+
+tasks.named("generateMainJooqSchemaSource") {
+    dependsOn("flywayMigrate")
+}

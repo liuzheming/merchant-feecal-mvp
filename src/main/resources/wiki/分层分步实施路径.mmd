@@ -1,0 +1,73 @@
+flowchart TB
+
+    %% ----------------------
+    %% UI 层
+    %% ----------------------
+    subgraph UI["前端页面"]
+        SummaryPage["汇总页面"]
+        CheckPage["盘点页面（Phase2 才启用）"]
+    end
+
+    %% ----------------------
+    %% M4 流程集成层
+    %% ----------------------
+    subgraph M4["M4 · 流程集成层（ProcessIntegration）"]
+        BPMHook["BPM 回调 / 节点入口"]
+        TaskDispatch["任务分发：谁负责哪些费用项"]
+    end
+
+    %% ----------------------
+    %% M1 清算核心域
+    %% ----------------------
+    subgraph M1["M1 · 清算核心域（SettlementCore）"]
+        Batch["SettlementBatch\n清算批次"]
+        TermItem["TermItem\n费用项实例"]
+        Summary["SettlementSummary\n汇总结果"]
+        FundInst["FundInstruction\n资金指令（结构）"]
+    end
+
+    %% ----------------------
+    %% M5 配置层（第三阶段）
+    %% ----------------------
+    subgraph M5["M5 · 配置层（TermConfig）\n(Phase3 才启用)"]
+        ScopeConfig["ScopeConfig\n费用项启用规则"]
+        AssignRule["AssignRule\n费用项 ↔ 人员\n(n:n / 1:1)"]
+    end
+
+    %% ----------------------
+    %% M2 计费适配层
+    %% ----------------------
+    subgraph M2["M2 · 上游计费适配层（BillingAdapter）\n(Phase1 Step2 启用)"]
+        BillingA["计费系统 A"]
+        BillingB["计费系统 B"]
+        BillingN["..."]
+    end
+
+    %% ----------------------
+    %% M3 资金适配层
+    %% ----------------------
+    subgraph M3["M3 · 下游资金适配层（FundAdapter）\n(Phase1 Step3 启用)"]
+        FundAPI["资金系统接口"]
+        Idempotent["幂等 / 状态控制"]
+    end
+
+
+    %% ----------------------
+    %% 关系
+    %% ----------------------
+
+    %% UI ↔ 流程层
+    SummaryPage --> BPMHook
+    CheckPage --> BPMHook
+
+    %% 流程层 ↔ 核心域
+    BPMHook --> TaskDispatch --> M1
+
+    %% 核心域 ↔ 配置层
+    M1 <--> M5
+
+    %% 核心域 ↔ 上游计费
+    M1 <--> M2
+
+    %% 核心域 ↔ 下游资金
+    M1 <--> M3

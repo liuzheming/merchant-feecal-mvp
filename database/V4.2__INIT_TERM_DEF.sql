@@ -1,0 +1,12 @@
+-- seed fee_cal_term_def with billing-related terms
+
+-- INSERT INTO `fee_cal_term_def` (`code`, `name`, `sort_no`, `enabled`, `auto_load`)
+-- VALUES
+--     ('TERM_ELECTRONIC_SEAL', '电子章费', 10, 1, 1),
+--     ('TERM_MINIMUM_GUARANTEE', '保底费', 20, 1, 1),
+--     ('TERM_400_CALL', '400话务费', 30, 1, 1)
+-- ON DUPLICATE KEY UPDATE
+--     `name` = VALUES(`name`),
+--     `sort_no` = VALUES(`sort_no`),
+--     `enabled` = VALUES(`enabled`),
+--     `auto_load` = VALUES(`auto_load`);
