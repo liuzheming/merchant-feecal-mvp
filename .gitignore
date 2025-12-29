@@ -3,3 +3,6 @@ build/
 out/
 .idea/
 *.log
+gradle.properties
+src/main/resources/application*.yml
+jooq.gradle
