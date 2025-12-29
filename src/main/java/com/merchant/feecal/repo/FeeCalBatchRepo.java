@@ -28,6 +28,15 @@ public class FeeCalBatchRepo {
     }
 
     /**
+     * 根据幂等请求ID查询
+     */
+    public FeeCalBatchEntity queryByRequestId(String requestId) {
+        return dslContext.selectFrom(FEE_CAL_BATCH)
+                .where(FEE_CAL_BATCH.REQUEST_ID.eq(requestId))
+                .fetchOneInto(FeeCalBatchEntity.class);
+    }
+
+    /**
      * 插入
      */
     public void insert(FeeCalBatchEntity entity) {

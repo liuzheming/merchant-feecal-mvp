@@ -9,6 +9,7 @@ import com.merchant.feecal.dto.*;
 public interface IFeeCalFacade {
 
     FeeCalStartResponse start(FeeCalStartRequest request);
+    FeeCalAutoStartResponse autoStart(FeeCalStartRequest request);
 
 
 	/**

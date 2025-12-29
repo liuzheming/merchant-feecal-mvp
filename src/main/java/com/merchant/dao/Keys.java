@@ -60,6 +60,7 @@ public class Keys {
 
     public static final UniqueKey<FeeCalBatchRecord> KEY_FEE_CAL_BATCH_PRIMARY = UniqueKeys0.KEY_FEE_CAL_BATCH_PRIMARY;
     public static final UniqueKey<FeeCalBatchRecord> KEY_FEE_CAL_BATCH_UK_BATCH_NO = UniqueKeys0.KEY_FEE_CAL_BATCH_UK_BATCH_NO;
+    public static final UniqueKey<FeeCalBatchRecord> KEY_FEE_CAL_BATCH_UK_REQUEST_ID = UniqueKeys0.KEY_FEE_CAL_BATCH_UK_REQUEST_ID;
     public static final UniqueKey<FeeCalBillingSnapshotRecord> KEY_FEE_CAL_BILLING_SNAPSHOT_PRIMARY = UniqueKeys0.KEY_FEE_CAL_BILLING_SNAPSHOT_PRIMARY;
     public static final UniqueKey<FeeCalFundInstructionRecord> KEY_FEE_CAL_FUND_INSTRUCTION_PRIMARY = UniqueKeys0.KEY_FEE_CAL_FUND_INSTRUCTION_PRIMARY;
     public static final UniqueKey<FeeCalFundInstructionRecord> KEY_FEE_CAL_FUND_INSTRUCTION_UK_BATCH_TERM_BIZ = UniqueKeys0.KEY_FEE_CAL_FUND_INSTRUCTION_UK_BATCH_TERM_BIZ;
@@ -91,6 +92,7 @@ public class Keys {
     private static class UniqueKeys0 {
         public static final UniqueKey<FeeCalBatchRecord> KEY_FEE_CAL_BATCH_PRIMARY = Internal.createUniqueKey(FeeCalBatch.FEE_CAL_BATCH, "KEY_fee_cal_batch_PRIMARY", new TableField[] { FeeCalBatch.FEE_CAL_BATCH.ID }, true);
         public static final UniqueKey<FeeCalBatchRecord> KEY_FEE_CAL_BATCH_UK_BATCH_NO = Internal.createUniqueKey(FeeCalBatch.FEE_CAL_BATCH, "KEY_fee_cal_batch_uk_batch_no", new TableField[] { FeeCalBatch.FEE_CAL_BATCH.BATCH_NO }, true);
+        public static final UniqueKey<FeeCalBatchRecord> KEY_FEE_CAL_BATCH_UK_REQUEST_ID = Internal.createUniqueKey(FeeCalBatch.FEE_CAL_BATCH, "KEY_fee_cal_batch_uk_request_id", new TableField[] { FeeCalBatch.FEE_CAL_BATCH.REQUEST_ID }, true);
         public static final UniqueKey<FeeCalBillingSnapshotRecord> KEY_FEE_CAL_BILLING_SNAPSHOT_PRIMARY = Internal.createUniqueKey(FeeCalBillingSnapshot.FEE_CAL_BILLING_SNAPSHOT, "KEY_fee_cal_billing_snapshot_PRIMARY", new TableField[] { FeeCalBillingSnapshot.FEE_CAL_BILLING_SNAPSHOT.ID }, true);
         public static final UniqueKey<FeeCalFundInstructionRecord> KEY_FEE_CAL_FUND_INSTRUCTION_PRIMARY = Internal.createUniqueKey(FeeCalFundInstruction.FEE_CAL_FUND_INSTRUCTION, "KEY_fee_cal_fund_instruction_PRIMARY", new TableField[] { FeeCalFundInstruction.FEE_CAL_FUND_INSTRUCTION.ID }, true);
         public static final UniqueKey<FeeCalFundInstructionRecord> KEY_FEE_CAL_FUND_INSTRUCTION_UK_BATCH_TERM_BIZ = Internal.createUniqueKey(FeeCalFundInstruction.FEE_CAL_FUND_INSTRUCTION, "KEY_fee_cal_fund_instruction_uk_batch_term_biz", new TableField[] { FeeCalFundInstruction.FEE_CAL_FUND_INSTRUCTION.BATCH_NO, FeeCalFundInstruction.FEE_CAL_FUND_INSTRUCTION.TERM_INST_ID, FeeCalFundInstruction.FEE_CAL_FUND_INSTRUCTION.FUND_BIZ_TYPE }, true);

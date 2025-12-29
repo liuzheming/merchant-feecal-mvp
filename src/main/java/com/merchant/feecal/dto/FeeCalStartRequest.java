@@ -20,6 +20,10 @@ public class FeeCalStartRequest implements Serializable {
      * 主体编码
      */
     private String merchantCode;
-}
 
+    /**
+     * 幂等请求ID
+     */
+    private String requestId;
+}
 

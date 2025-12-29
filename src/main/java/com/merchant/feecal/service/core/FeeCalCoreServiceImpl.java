@@ -13,6 +13,7 @@ import com.merchant.feecal.dto.FeeCalStartRequest;
 import com.merchant.feecal.dto.FeeCalStartResponse;
 import com.merchant.feecal.repo.FeeCalBillingSnapshotRepo;
 import com.merchant.feecal.repo.FeeCalBatchRepo;
+import com.merchant.feecal.repo.FeeCalIdempotentRepo;
 import com.merchant.feecal.repo.FeeCalMerchantRepo;
 import com.merchant.feecal.repo.FeeCalTermInstAllocRepo;
 import com.merchant.feecal.repo.FeeCalTermInstRepo;
@@ -26,6 +27,8 @@ import com.merchant.feecal.service.fund.model.FundExecutionContext;
 import com.merchant.feecal.termdef.TermDefService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jooq.exception.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +54,8 @@ public class FeeCalCoreServiceImpl implements IFeeCalCoreService {
 
     @Resource
     private FeeCalMerchantRepo feeCalMerchantRepo;
+    @Resource
+    private FeeCalIdempotentRepo feeCalIdempotentRepo;
 
     @Resource
     private FeeCalTermInstRepo feeCalTermInstRepo;
@@ -79,10 +84,45 @@ public class FeeCalCoreServiceImpl implements IFeeCalCoreService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public FeeCalStartResponse start(FeeCalStartRequest request) {
+        if (request == null) {
+            throw new ServiceException("请求不能为空");
+        }
+        String requestId = request.getRequestId();
+        FeeCalIdempotentEntity idempotent = null;
+        if (StringUtils.isNotBlank(requestId)) {
+            idempotent = feeCalIdempotentRepo.queryByBizAndRequestId(IdempotentBiz.FEE_CAL_START, requestId);
+            if (idempotent != null && StringUtils.isNotBlank(idempotent.getBatchNo())) {
+                FeeCalStartResponse response = new FeeCalStartResponse();
+                response.setBatchNo(idempotent.getBatchNo());
+                return response;
+            }
+        }
         String batchNo = generateBatchNo();
+
+        if (StringUtils.isNotBlank(requestId)) {
+            FeeCalIdempotentEntity newEntity = new FeeCalIdempotentEntity();
+            newEntity.setBizType(IdempotentBiz.FEE_CAL_START);
+            newEntity.setRequestId(requestId);
+            newEntity.setStatus(IdempotentStatus.PROCESSING);
+            newEntity.setBatchNo(batchNo);
+            try {
+                feeCalIdempotentRepo.insert(newEntity);
+                idempotent = newEntity;
+            } catch (DataAccessException ex) {
+                FeeCalIdempotentEntity existing = feeCalIdempotentRepo.queryByBizAndRequestId(
+                        IdempotentBiz.FEE_CAL_START, requestId);
+                if (existing != null && StringUtils.isNotBlank(existing.getBatchNo())) {
+                    FeeCalStartResponse response = new FeeCalStartResponse();
+                    response.setBatchNo(existing.getBatchNo());
+                    return response;
+                }
+                throw ex;
+            }
+        }
 
         FeeCalBatchEntity batchEntity = new FeeCalBatchEntity();
         batchEntity.setBatchNo(batchNo);
+        batchEntity.setRequestId(requestId);
         batchEntity.setStatus(Batch.EDITING);
         batchEntity.setBillingDataStatus(BillingData.PENDING);
         batchEntity.setDepositBalanceTotal(BigDecimal.ZERO);
@@ -121,13 +161,36 @@ public class FeeCalCoreServiceImpl implements IFeeCalCoreService {
             feeCalBillingManageService.refreshBillingData(coreContext);
             aggregateAndApplyAutoLoadTerms(coreContext);
             termInstAllocService.rebuildAllocations(coreContext);
+            if (idempotent != null) {
+                feeCalIdempotentRepo.updateStatusAndBatchNo(
+                        idempotent.getId(),
+                        IdempotentStatus.SUCCESS,
+                        batchNo,
+                        null);
+            }
         } catch (ServiceException ex) {
+            if (idempotent != null) {
+                feeCalIdempotentRepo.updateStatus(
+                        idempotent.getId(),
+                        IdempotentStatus.FAIL,
+                        ex.getMessage());
+            }
             LOGGER.warn("auto refresh billing data failed, batchNo={}", batchNo, ex);
         }
 
         FeeCalStartResponse response = new FeeCalStartResponse();
         response.setBatchNo(batchNo);
         return response;
+    }
+
+    private static final class IdempotentBiz {
+        private static final String FEE_CAL_START = "FEE_CAL_START";
+    }
+
+    private static final class IdempotentStatus {
+        private static final String PROCESSING = "PROCESSING";
+        private static final String SUCCESS = "SUCCESS";
+        private static final String FAIL = "FAIL";
     }
 
     /**
