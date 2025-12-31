@@ -20,7 +20,7 @@ import org.jooq.ForeignKey;
 import org.jooq.Identity;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row10;
+import org.jooq.Row11;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -43,7 +43,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class FeeCalBatch extends TableImpl<FeeCalBatchRecord> {
 
-    private static final long serialVersionUID = 868693550;
+    private static final long serialVersionUID = 2042228985;
 
     /**
      * The reference instance of <code>fee_cal_batch</code>
@@ -109,6 +109,11 @@ public class FeeCalBatch extends TableImpl<FeeCalBatchRecord> {
     public final TableField<FeeCalBatchRecord, LocalDateTime> MTIME = createField(DSL.name("mtime"), org.jooq.impl.SQLDataType.LOCALDATETIME.defaultValue(org.jooq.impl.DSL.field("CURRENT_TIMESTAMP", org.jooq.impl.SQLDataType.LOCALDATETIME)), this, "");
 
     /**
+     * The column <code>fee_cal_batch.request_id</code>. 幂等请求ID
+     */
+    public final TableField<FeeCalBatchRecord, String> REQUEST_ID = createField(DSL.name("request_id"), org.jooq.impl.SQLDataType.VARCHAR(64), this, "幂等请求ID");
+
+    /**
      * Create a <code>fee_cal_batch</code> table reference
      */
     public FeeCalBatch() {
@@ -158,7 +163,7 @@ public class FeeCalBatch extends TableImpl<FeeCalBatchRecord> {
 
     @Override
     public List<UniqueKey<FeeCalBatchRecord>> getKeys() {
-        return Arrays.<UniqueKey<FeeCalBatchRecord>>asList(Keys.KEY_FEE_CAL_BATCH_PRIMARY, Keys.KEY_FEE_CAL_BATCH_UK_BATCH_NO);
+        return Arrays.<UniqueKey<FeeCalBatchRecord>>asList(Keys.KEY_FEE_CAL_BATCH_PRIMARY, Keys.KEY_FEE_CAL_BATCH_UK_BATCH_NO, Keys.KEY_FEE_CAL_BATCH_UK_REQUEST_ID);
     }
 
     @Override
@@ -188,11 +193,11 @@ public class FeeCalBatch extends TableImpl<FeeCalBatchRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row10 type methods
+    // Row11 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row10<Long, String, String, String, BigDecimal, BigDecimal, BigDecimal, BigDecimal, LocalDateTime, LocalDateTime> fieldsRow() {
-        return (Row10) super.fieldsRow();
+    public Row11<Long, String, String, String, BigDecimal, BigDecimal, BigDecimal, BigDecimal, LocalDateTime, LocalDateTime, String> fieldsRow() {
+        return (Row11) super.fieldsRow();
     }
 }

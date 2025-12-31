@@ -4,14 +4,12 @@ type StartRequest = {
   requestId?: string;
 };
 
-const url = "http://localhost:8080/web/feeCal/summary/start";
-const merchantType = "MERCHANT";
-const merchantCode = "M0001";
+const url = "http://localhost:8080/web/feeCal/summary/autoStart";
 
 const payload: StartRequest = {
-  merchantType,
-  merchantCode,
-  requestId: "req-start-001",
+  merchantType: "MERCHANT",
+  merchantCode: "M0001",
+  requestId: "req-auto-001",
 };
 
 async function main() {

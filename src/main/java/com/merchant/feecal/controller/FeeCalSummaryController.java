@@ -32,6 +32,15 @@ public class FeeCalSummaryController {
     }
 
     /**
+     * 自动清算：start -> submit -> 生成指令 -> 自动执行
+     */
+    @PostMapping("/autoStart")
+    public ResponseResult<FeeCalAutoStartResponse> autoStart(@RequestBody FeeCalStartRequest request) {
+        FeeCalAutoStartResponse response = feeCalFacade.autoStart(request);
+        return ResponseResult.success(response);
+    }
+
+    /**
      * 2）渲染清算页面（根据 batchNo 查询）
      */
     @GetMapping("/page")

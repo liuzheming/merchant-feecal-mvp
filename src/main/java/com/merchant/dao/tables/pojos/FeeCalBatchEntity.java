@@ -24,7 +24,7 @@ import javax.annotation.Generated;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class FeeCalBatchEntity implements Serializable {
 
-    private static final long serialVersionUID = 1816539945;
+    private static final long serialVersionUID = 238577711;
 
     private Long          id;
     private String        batchNo;
@@ -36,6 +36,7 @@ public class FeeCalBatchEntity implements Serializable {
     private BigDecimal    unpaidAmountRemain;
     private LocalDateTime ctime;
     private LocalDateTime mtime;
+    private String        requestId;
 
     public FeeCalBatchEntity() {}
 
@@ -50,6 +51,7 @@ public class FeeCalBatchEntity implements Serializable {
         this.unpaidAmountRemain = value.unpaidAmountRemain;
         this.ctime = value.ctime;
         this.mtime = value.mtime;
+        this.requestId = value.requestId;
     }
 
     public FeeCalBatchEntity(
@@ -62,7 +64,8 @@ public class FeeCalBatchEntity implements Serializable {
         BigDecimal    depositBalanceRemain,
         BigDecimal    unpaidAmountRemain,
         LocalDateTime ctime,
-        LocalDateTime mtime
+        LocalDateTime mtime,
+        String        requestId
     ) {
         this.id = id;
         this.batchNo = batchNo;
@@ -74,6 +77,7 @@ public class FeeCalBatchEntity implements Serializable {
         this.unpaidAmountRemain = unpaidAmountRemain;
         this.ctime = ctime;
         this.mtime = mtime;
+        this.requestId = requestId;
     }
 
     public Long getId() {
@@ -166,6 +170,15 @@ public class FeeCalBatchEntity implements Serializable {
         return this;
     }
 
+    public String getRequestId() {
+        return this.requestId;
+    }
+
+    public FeeCalBatchEntity setRequestId(String requestId) {
+        this.requestId = requestId;
+        return this;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("FeeCalBatchEntity (");
@@ -180,6 +193,7 @@ public class FeeCalBatchEntity implements Serializable {
         sb.append(", ").append(unpaidAmountRemain);
         sb.append(", ").append(ctime);
         sb.append(", ").append(mtime);
+        sb.append(", ").append(requestId);
 
         sb.append(")");
         return sb.toString();
