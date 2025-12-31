@@ -1,4 +1,4 @@
-//package com.merchant.leetcode.dp;
+//package com.merchant.common.leetcode.dp;
 //
 //import lombok.extern.slf4j.Slf4j;
 //

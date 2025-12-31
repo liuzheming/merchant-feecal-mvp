@@ -1,6 +1,5 @@
-package com.merchant.leetcode;
+package com.merchant.common.leetcode;
 
-import com.fasterxml.jackson.databind.util.LinkedNode;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
