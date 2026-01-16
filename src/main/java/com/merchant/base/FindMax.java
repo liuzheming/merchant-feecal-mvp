@@ -1,4 +1,4 @@
-package com.merchant.leetcode;
+package com.merchant.base;
 
 /**
  * Description:

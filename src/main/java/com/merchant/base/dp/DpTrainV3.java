@@ -1,4 +1,4 @@
-package com.merchant.leetcode.dp;
+package com.merchant.base.dp;
 
 import org.apache.commons.lang3.math.NumberUtils;
 

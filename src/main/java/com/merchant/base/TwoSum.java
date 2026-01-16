@@ -1,4 +1,4 @@
-package com.merchant.leetcode;
+package com.merchant.base;
 
 import com.google.common.collect.Lists;
 

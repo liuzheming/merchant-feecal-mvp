@@ -1,4 +1,4 @@
-package com.merchant;
+package com.merchant.base;
 
 /**
  * Description:
